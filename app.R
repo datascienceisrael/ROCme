@@ -1,6 +1,6 @@
 # set working directory to current file location
-rstudioapi::getActiveDocumentContext()
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# rstudioapi::getActiveDocumentContext()
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # load utilities
 source("init.R")
