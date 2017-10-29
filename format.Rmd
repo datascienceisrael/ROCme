@@ -1,0 +1,16 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Format
+
+The uploaded file should be a valid .csv with two columns - predicted values and real labels.
+
+The names **must** be `pred` and `real`, otherwise the application will throw an error.
+
+**Minimal Example**
+```{r}
+real = c(rep(0,5), rep(1,5)) # real labels, given as 0/1
+pred = seq(0,1,length.out = 10) # predicted values
+data.frame(real, pred) 
+```

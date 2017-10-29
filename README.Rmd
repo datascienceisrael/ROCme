@@ -1,0 +1,14 @@
+---
+title: "ROCme"
+author: "Data Science Group"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## ROCme - analyze binary classifiers
+
+
+![](usage.gif)
