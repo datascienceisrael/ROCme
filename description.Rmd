@@ -1,0 +1,29 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## ROCme
+
+<br>
+
+#### This App is a Tool to Analyse Binay Classification Results
+
+
++ **Modify Decision Criterion** Dynamically and Examine Implications
+
++ **Modify Cost** on False Negative/False Positive According to Bussiness Needs
+
+<br><br>
+
+#### Current performance metrics included:
+
+  * AUC score (+ plot)
+  * sensitivity
+  * specificity
+  * precision
+  * recall
+  * balanced_accuracy
+
+<br><br>
+
+_Any Ideas To Expand Functionality? Let Me Know_

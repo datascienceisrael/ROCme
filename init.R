@@ -2,10 +2,14 @@
 library(shiny)
 library(shinydashboard)
 library(dplyr)
+library(readr)
 library(rmarkdown)
 library(ggplot2)
 library(ROCR)
 library(scales)
+
+# (!) magic numbers
+N_CRIT = 50
 
 # auxilliary functions
 pf <- function() scales::percent_format()
@@ -58,6 +62,62 @@ evalMetrics <- function(df, crit = .5){
 }
 
 
+critReco <- function(tab = NULL, w_fp = .5) {
+
+  # incorrect predictions
+  crit_grid = seq(0,1, length.out = N_CRIT)
+  
+  # weights for false positives and false negatives
+  w_fn = 1 - w_fp
+  
+  # init empty data.frame to hold False Positives/Negatives count
+  false_count = data.frame(FP = rep(NA, N_CRIT),
+                           FN = rep(NA, N_CRIT))
+  
+  # compute fp and fn for each decision criterion
+  i = 1;
+  for (crit in crit_grid){
+    
+    # false predictions table
+    falses <- 
+      tab %>%
+      mutate(pred = as.numeric(pred > crit)) %>% 
+      filter(pred != real)  
+    
+    # fill in the FP/NP count according to each criterion in the grid
+    false_count$FP[i] <- nrow(filter(falses, pred == 1)) 
+    false_count$FN[i] <- nrow(filter(falses, pred == 0)) 
+    
+    # increment index
+    i = i + 1
+  }
+  
+  # add missclassifications cost and the different decision criterion
+  false_count <- 
+    false_count %>%
+    mutate(crit = crit_grid) %>% 
+    mutate(cost = w_fp * FP + w_fn *FN) 
+  
+  # best criterion
+  idx = which.min(false_count$cost)
+  min_cost = false_count$cost[idx]
+  bst_crit = false_count$crit[idx]
+  txt = paste("Best criterion:", round(bst_crit, digits = 3), "Cost:", min_cost)
+  
+  # plot and return
+  false_count %>% 
+    ggplot(aes(x = crit, y = cost)) +
+    geom_point(size = 3.5, shape = 1) + 
+    geom_smooth() +
+    labs(title = "Criterion Recommendation",x = "Decision Criterion", y = "Weighted Error Cost") +
+    annotate(geom = "text", label = txt, x = bst_crit, y = (min_cost - 1), size = 4.5, color = "blue") +
+    theme_bw()
+}
+
+
+
+  
+  
 # ROC curve plotting function
 plotROC <- function(tab) {
   ##################################################
