@@ -46,18 +46,23 @@ evalMetrics <- function(df, crit = .5){
   specificity = rnd(tn/colSums(cf)[2]) # Specificity = D/(B+D)
   precision   = rnd(tp/rowSums(cf)[1]) # Precision = A/(A+B)
   recall      = rnd(tp/colSums(cf)[1]) # Recall = A/(A+C)
+  f1score     = rnd(2*tp/(2*tp + cf[1,2] + cf[2,1])) # F1score = 2xA/(2xA + B + C)
+  accuracy    = rnd((tp + tn)/sum(cf)) # Accuracy = (A+D)/(A+B+C+D)
   
   # Balanced Accuracy = (sensitivity+specificity)/2
   balanced_accuracy  = (sensitivity + specificity)/2
+  informedness = sensitivity + specificity - 1
   
   # return
-  tribble(
-    ~Metric, ~Score,
-    "sensitivity", pf()(sensitivity),
-    "specificity", pf()(specificity),
-    "precision",   pf()(precision),
-    "recall",      pf()(recall),
-    "balanced_accuracy", pf()(balanced_accuracy)
+  tibble(
+    "sensitivity" = pf()(sensitivity),
+    "specificity" = pf()(specificity),
+    "precision"   = pf()(precision),
+    "recall"      = pf()(recall),
+    "F1score"     = pf()(f1score), 
+    "accuracy"    = pf()(accuracy),
+    "balanced_accuracy" = pf()(balanced_accuracy),
+    "informedness"      = pf()(informedness)
   )
 }
 

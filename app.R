@@ -1,7 +1,3 @@
-# set working directory to current file location
-# rstudioapi::getActiveDocumentContext()
-# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-
 # load utilities
 source("init.R")
 
@@ -92,7 +88,7 @@ body <- dashboardBody(
             # Evluation Metrics
             shinydashboard::box(title = "Evaluation Metrics",
                                 status = "primary",
-                                width = 3,
+                                width = 10,
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
                                 tableOutput("metrics"))
