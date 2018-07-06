@@ -1,3 +1,7 @@
+# set working directory to current file location
+# rstudioapi::getActiveDocumentContext()
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 # load utilities
 source("init.R")
 
@@ -7,25 +11,12 @@ header <- dashboardHeader(title = "ROCme")
 
 # sidebar layout
 sidebar <- dashboardSidebar(sidebarMenu(id = "tabs",
-                                        # first item - general description
-                                        menuItem("Description", tabName = "description", icon = icon("info-circle")),
+                                        # first item - general instructions
+                                        menuItem("Instructions", tabName = "instructions", icon = icon("info-circle")),
                                         # second item - upload file
                                         menuItem("Data", tabName = "uploadData", icon = icon("table")),
                                         # third item
                                         menuItem("Analysis", tabName = "analysis", icon = icon("binoculars")),
-                                        menuItem("Control", tabName = "Control", icon = icon("sort"),
-                                                 menuSubItem(tabName = "decision criterion",
-                                                   sliderInput("crit", "Decision Criterion:",
-                                                             min = 0.001, max = 0.999,
-                                                             value = 0.5, step = 0.025,
-                                                             sep = ",",
-                                                             animate = TRUE)),
-                                                 menuSubItem(tabName = "weight",
-                                                   sliderInput("w_fp", "Penalty for False Positive:",
-                                                             min = 0.1, max = 0.9,
-                                                             value = 0.5, step = 0.1,
-                                                             sep = ",",
-                                                             animate = TRUE))),
                                         # for debugging
                                         textOutput("res")
 ))
@@ -39,13 +30,12 @@ body <- dashboardBody(
                             font-size: 24px;
                             }'))),
   tabItems(
-    # description Tab
-    tabItem(tabName = "description",
-            # description
-            shinydashboard::box(status = "primary",
-                                solidHeader = TRUE,
-                                collapsible = TRUE,
-                                uiOutput("inst"))),
+    # instructions Tab
+    tabItem(tabName = "instructions",
+            fluidPage(h3("This App is a Tool to Analyse Binay Classification Results\n"), br(),
+                      h4("  + Modify Decision Criterion Dynamically and Examine Implications\n"), br(),
+                      h4("  + Modify Cost on False Negative/False Positive According to Bussiness Needs\n"), br(),
+                      h5("Any Ideas To Expand Functionality? Let Me Know :)"))),
     # Upload data
     tabItem(tabName = "uploadData",
             # choose file
@@ -54,44 +44,42 @@ body <- dashboardBody(
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
                                 fileInput("datafile", "Choose file",
-                                          accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv"))),
+                                          accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
             # Explanations
             shinydashboard::box(status = "primary",
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
-                                uiOutput("format"))),
+                                uiOutput('format'))),
     # Analysis
     tabItem(tabName = "analysis",
-            fluidRow(
             # ROC curve
-            shinydashboard::box(title = "Roc Curve",
+            shinydashboard::box(title = "Roc Curves",
                                 status = "primary",
-                                width = 4,
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
-                                plotOutput("roc")),
-            # Criterion Recommendation
-            shinydashboard::box(title = "Recommended Criterion",
-                                status = "primary",
-                                width = 4,
-                                solidHeader = TRUE,
-                                collapsible = TRUE,
-                                plotOutput("reco")),
-            # Confusion Matrix
+                                plotOutput('roc')),
+            # Debugging
             shinydashboard::box(title = "Confusion Matrix",
+                                with = 3,
                                 status = "primary",
-                                width = 4,
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
-                                plotOutput("confPlot"))
-            ),
+                                plotOutput('confPlot')),
+            # Decision Criterion
+            shinydashboard::box(status = "primary",
+                                solidHeader = TRUE,
+                                collapsible = TRUE,
+                                sliderInput("crit", "Decision Criterion:",
+                                            min = 0.001, max = 0.999,
+                                            value = 0, step = 0.05,
+                                            sep = ",",
+                                            animate = TRUE)),
             # Evluation Metrics
             shinydashboard::box(title = "Evaluation Metrics",
                                 status = "primary",
-                                width = 10,
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
-                                tableOutput("metrics"))
+                                tableOutput('metrics'))
     )
   )
 )
@@ -107,14 +95,6 @@ server <- function(input, output, session) {
   # set file limit to 5MB
   options(shiny.maxRequestSize = 5*1024^2)
 
-  # ROCme description
-  output$inst <- renderUI({
-    rmarkdown::render(input = "description.Rmd",
-                      output_format = html_document(self_contained = TRUE),
-                      output_file = 'description.html')
-    shiny::includeHTML('description.html')
-  })
-  
   # format specs/instructions for the uploaded fie
   output$format <- renderUI({
     rmarkdown::render(input = "format.Rmd",
@@ -128,7 +108,7 @@ server <- function(input, output, session) {
     infile <- input$datafile
     if(is.null(infile))
       return(NULL)
-    d <- read_csv(infile$datapath)
+    d <- read.csv(infile$datapath)
   })
 
   # The ROC curve plot
@@ -145,13 +125,9 @@ server <- function(input, output, session) {
 
   # The evaluation metrics
   output$metrics <- renderTable({
+
     evalMetrics(df = theData(), crit = input$crit)
     })
-  
-  # Criterion Recommendation
-  output$reco <- renderPlot({
-    critReco(tab = theData(), w_fp = input$w_fp)
-  })
 
 }
 
