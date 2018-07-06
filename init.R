@@ -1,7 +1,9 @@
 # imported libraries
+library(dashboardthemes)
+library(dplyr)
 library(shiny)
 library(shinydashboard)
-library(dplyr)
+library(shinydashboardPlus)
 library(rmarkdown)
 library(ggplot2)
 library(ROCR)

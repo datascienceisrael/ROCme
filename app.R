@@ -5,7 +5,7 @@
 # load utilities
 source("init.R")
 
-# user interfact code --------------------
+# user interface code --------------------
 # header
 header <- dashboardHeader(title = "ROCme")
 
@@ -29,27 +29,36 @@ body <- dashboardBody(
                             font-weight: bold;
                             font-size: 24px;
                             }'))),
+  ### changing theme
+  shinyDashboardThemes(
+    theme = "blue_gradient"
+  ),
+  
   tabItems(
     # instructions Tab
     tabItem(tabName = "instructions",
             fluidPage(h3("This App is a Tool to Analyse Binay Classification Results\n"), br(),
                       h4("  + Modify Decision Criterion Dynamically and Examine Implications\n"), br(),
-                      h4("  + Modify Cost on False Negative/False Positive According to Bussiness Needs\n"), br(),
+                      h4("  + Diagnose AUC plot\n"), br(),
+                      h4("  + Check the standard metrics like sensitivity, specificity, precision and recall\n"), br(),
                       h5("Any Ideas To Expand Functionality? Let Me Know :)"))),
     # Upload data
     tabItem(tabName = "uploadData",
             # choose file
-            shinydashboard::box(title = "Data Upload",
-                                status = "primary",
-                                solidHeader = TRUE,
-                                collapsible = TRUE,
-                                fileInput("datafile", "Choose file",
-                                          accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
+            gradientBox(
+              title = "Data Upload",
+              icon = "fa fa-upload",
+              gradientColor = "teal",
+              boxToolSize = "s",
+              closable = FALSE,
+              footer = "Note: file must not exceed 30MB",
+              fileInput("datafile", "Choose file", placeholder = "No file selected",
+                        accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
+            
             # Explanations
-            shinydashboard::box(status = "primary",
-                                solidHeader = TRUE,
-                                collapsible = TRUE,
-                                uiOutput('format'))),
+            gradientBox(gradientColor = "teal",
+                        closable = TRUE,
+                        includeHTML('format.html'))),
     # Analysis
     tabItem(tabName = "analysis",
             # ROC curve
@@ -91,18 +100,10 @@ ui <- dashboardPage(header, sidebar, body)
 
 # code on the server side ---------------------
 server <- function(input, output, session) {
-
+  
   # set file limit to 5MB
   options(shiny.maxRequestSize = 5*1024^2)
-
-  # format specs/instructions for the uploaded fie
-  output$format <- renderUI({
-    rmarkdown::render(input = "format.Rmd",
-                      output_format = html_document(self_contained = TRUE),
-                      output_file = 'format.html')
-    shiny::includeHTML('format.html')
-  })
-
+  
   # read uploaded data file
   theData <- reactive({
     infile <- input$datafile
@@ -110,10 +111,10 @@ server <- function(input, output, session) {
       return(NULL)
     d <- read.csv(infile$datapath)
   })
-
+  
   # The ROC curve plot
   output$roc <- renderPlot({  plotROC( tab = theData() )})
-
+  
   # The confusion Matrix visualization
   output$confPlot <- renderPlot({
     fourfoldplot(confMatrix(crit = input$crit, tab = theData()),
@@ -121,14 +122,14 @@ server <- function(input, output, session) {
                  conf.level = 0,
                  margin = 1,
                  main = "Confusion Matrix")
-    })
-
+  })
+  
   # The evaluation metrics
   output$metrics <- renderTable({
-
+    
     evalMetrics(df = theData(), crit = input$crit)
-    })
-
+  })
+  
 }
 
 # Run the application
