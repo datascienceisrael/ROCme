@@ -46,7 +46,9 @@ knitr::opts_chunk$set(echo = TRUE)
 Basic Information about the Application:
 
 <br>
+
 ![](assets/rocme_info.png)
+
 <br><br>
 
 
@@ -55,7 +57,9 @@ Basic Information about the Application:
 Upload a .csv file in the expected format, as detailed in the `info` tab:
 
 <br>
+
 ![](assets/rocme_upload.png)
+
 <br><br>
 
 
@@ -64,15 +68,18 @@ Upload a .csv file in the expected format, as detailed in the `info` tab:
 Metrics to evaluate the overall performance of the Model:
 
 <br>
+
 ![](assets/rocme_global_roc.png)
-<br>
 
 <br>
+
+
 ![](assets/rocme_global_dist.png)
-<br>
 
 <br>
+
 ![](assets/rocme_global_bins.png)
+
 <br><br>
 
 ### Local Metrics:
@@ -80,6 +87,8 @@ Metrics to evaluate the overall performance of the Model:
 Interact with the Decision Threshold to inspect Local Performance Metrics:
 
 <br>
+
 ![](assets/rocme_local.png)
+
 <br><br>
 
