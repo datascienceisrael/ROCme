@@ -8,21 +8,24 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### This App is a Tool to Analyse Binay Classification Results
 
+<br>
 
-+ **Modify Decision Criterion** Dynamically and Examine Implications
++ **Global Metrics** - Diagnost the ROC Curves, Predictions Distribution, and Prediction Buckets
 
-+ **Modify Cost** on False Negative/False Positive According to Bussiness Needs
++ **Local Metrics** Interactively Modify the Descision Threshold and Analyse Precision, Recall, Accuracy etc.
+
 
 <br><br>
 
 #### Current performance metrics included:
 
-  * AUC score (+ plot)
-  * sensitivity
-  * specificity
-  * precision
-  * recall
-  * balanced_accuracy
+  * AUC Plots & Scores  
+  * Predictions Distributions  
+  * Sensitivity
+  * Specificity
+  * Precision
+  * Recall
+  * Balanced_accuracy
 
 <br><br>
 

@@ -12,11 +12,13 @@ header <- dashboardHeader(title = "ROCme")
 # sidebar layout
 sidebar <- dashboardSidebar(sidebarMenu(id = "tabs",
                                         # first item - general instructions
-                                        menuItem("Instructions", tabName = "instructions", icon = icon("info-circle")),
+                                        menuItem("Info", tabName = "instructions", icon = icon("info-circle")),
                                         # second item - upload file
                                         menuItem("Data", tabName = "uploadData", icon = icon("table")),
-                                        # third item
-                                        menuItem("Analysis", tabName = "analysis", icon = icon("binoculars")),
+                                        # third item - global KPIs
+                                        menuItem("Global Metrics", tabName = "global_metrics", icon = icon("globe")),
+                                        # fourth item - local KPIs
+                                        menuItem("Local Metrics", tabName = "local_est", icon = icon("binoculars")),
                                         # for debugging
                                         textOutput("res")
 ))
@@ -30,46 +32,62 @@ body <- dashboardBody(
                             font-size: 24px;
                             }'))),
   ### changing theme
-  shinyDashboardThemes(
-    theme = "blue_gradient"
-  ),
+  # shinyDashboardThemes(
+  #   theme = "slate"
+  # ),
   
   tabItems(
+    
     # instructions Tab
     tabItem(tabName = "instructions",
-            fluidPage(h3("This App is a Tool to Analyse Binay Classification Results\n"), br(),
-                      h4("  + Modify Decision Criterion Dynamically and Examine Implications\n"), br(),
-                      h4("  + Diagnose AUC plot\n"), br(),
-                      h4("  + Check the standard metrics like sensitivity, specificity, precision and recall\n"), br(),
-                      h5("Any Ideas To Expand Functionality? Let Me Know :)"))),
+            includeHTML('description.html')),
+    
     # Upload data
     tabItem(tabName = "uploadData",
             # choose file
-            gradientBox(
-              title = "Data Upload",
-              icon = "fa fa-upload",
-              gradientColor = "teal",
-              boxToolSize = "s",
-              closable = FALSE,
-              footer = "Note: file must not exceed 30MB",
-              fileInput("datafile", "Choose file", placeholder = "No file selected",
-                        accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
+            shinydashboard::box(collapsible = TRUE, 
+                                status = "warning",
+                                title = "Data Upload",
+                                footer = "Note: file must not exceed 50MB",
+                                fileInput("datafile", "Choose file", placeholder = "No file selected",
+                                          accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
             
             # Explanations
-            gradientBox(gradientColor = "teal",
-                        closable = TRUE,
-                        includeHTML('format.html'))),
-    # Analysis
-    tabItem(tabName = "analysis",
-            # ROC curve
-            shinydashboard::box(title = "Roc Curves",
-                                status = "primary",
-                                solidHeader = TRUE,
-                                collapsible = TRUE,
-                                plotOutput('roc')),
-            # Debugging
+            shinydashboard::box(collapsible = TRUE,
+                                status = "warning",
+                                includeHTML('format.html'))),
+    
+    # global metrics visualization
+    tabItem(tabName = "global_metrics",
+      tabBox(title = "Global Model Metrics",
+             id = "tabset1",
+             width = 12,
+             # Roc curves
+             tabPanel(title = "Roc Curves",
+                      status = "primary",
+                      
+                      solidHeader = TRUE,
+                      collapsible = TRUE,
+                      plotOutput('rocs',  height = 500)),
+             # Predictions Distribution
+             tabPanel(title = "Prediction Scores Distribution",
+                      status = "primary",
+                      solidHeader = TRUE,
+                      collapsible = TRUE,
+                      plotOutput('predictions_dist',  height = 500)),
+             # Predictions Bins
+             tabPanel(title = "Prediction Scores Bins",
+                      status = "primary",
+                      solidHeader = TRUE,
+                      collapsible = TRUE,
+                      plotOutput('predictions_splits',  height = 500)))
+    ),
+    
+    # Local metrics visualization
+    tabItem(tabName = "local_est",
+            # Confusion Matrix
             shinydashboard::box(title = "Confusion Matrix",
-                                with = 3,
+                                width = 6,
                                 status = "primary",
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
@@ -80,7 +98,7 @@ body <- dashboardBody(
                                 collapsible = TRUE,
                                 sliderInput("crit", "Decision Criterion:",
                                             min = 0.001, max = 0.999,
-                                            value = 0, step = 0.05,
+                                            value = 0.5, step = 0.05,
                                             sep = ",",
                                             animate = TRUE)),
             # Evluation Metrics
@@ -88,8 +106,7 @@ body <- dashboardBody(
                                 status = "primary",
                                 solidHeader = TRUE,
                                 collapsible = TRUE,
-                                tableOutput('metrics'))
-    )
+                                tableOutput('metrics')))
   )
 )
 
@@ -101,8 +118,8 @@ ui <- dashboardPage(header, sidebar, body)
 # code on the server side ---------------------
 server <- function(input, output, session) {
   
-  # set file limit to 5MB
-  options(shiny.maxRequestSize = 5*1024^2)
+  # set file limit to 50MB
+  options(shiny.maxRequestSize = 50*1024^2)
   
   # read uploaded data file
   theData <- reactive({
@@ -112,12 +129,21 @@ server <- function(input, output, session) {
     d <- read.csv(infile$datapath)
   })
   
+  threshold <- reactive({ input$crit })
+  
   # The ROC curve plot
-  output$roc <- renderPlot({  plotROC( tab = theData() )})
+  output$rocs <- renderPlot({  grid.arrange(plotROC( tab = theData() ),
+                                            plot_aucpr( tab = theData()),
+                                            ncol = 2) })
+  
+  # The predictions distribution
+  output$predictions_dist <- renderPlot({  grid.arrange(mplot_density( tab = theData() ),
+                                                        mplot_bins(tab = theData(), splits = N),
+                                                        ncol = 1) })
   
   # The confusion Matrix visualization
   output$confPlot <- renderPlot({
-    fourfoldplot(confMatrix(crit = input$crit, tab = theData()),
+    fourfoldplot(confMatrix(crit = threshold(), tab = theData()),
                  color = c("#CC6666", "#99CC99"),
                  conf.level = 0,
                  margin = 1,
@@ -126,10 +152,11 @@ server <- function(input, output, session) {
   
   # The evaluation metrics
   output$metrics <- renderTable({
-    
-    evalMetrics(df = theData(), crit = input$crit)
+    evalMetrics(df = theData(), crit = threshold())
   })
-  
+ 
+  # prediction splits VS label
+  output$predictions_splits <- renderPlot({ mplot_splits(tab = theData(), splits = 5) })
 }
 
 # Run the application
