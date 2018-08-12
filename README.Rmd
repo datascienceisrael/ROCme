@@ -18,9 +18,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <br>
 
-+ **Global Metrics** - Diagnost the ROC Curves, Predictions Distribution, and Prediction Buckets
++ **Global Metrics** - Diagnose the ROC Curves, Predictions Distribution, and Prediction Buckets
 
-+ **Local Metrics** Interactively Modify the Descision Threshold and Analyse Precision, Recall, Accuracy etc.
++ **Local Metrics** Interactively Modify the Decision Threshold and Analyse Precision, Recall, Accuracy etc.
 
 
 <br><br>
@@ -52,7 +52,7 @@ Basic Information about the Application:
 
 ### Upload Tab:
 
-Uplaod a .csv file in the expected format, as detailed in the `info` tab:
+Upload a .csv file in the expected format, as detailed in the `info` tab:
 
 <br>
 ![](assets/rocme_upload.png)
