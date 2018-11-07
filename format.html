@@ -123,8 +123,9 @@ $(document).ready(function () {
 
 <div id="data-format" class="section level2">
 <h2>Data Format</h2>
-<p>The uploaded file should be a valid .csv with two columns - predicted values and real labels.</p>
-<p>The names <strong>must</strong> be <code>pred</code> and <code>real</code>, otherwise the application will throw an error.</p>
+<p>The uploaded file should be a valid .csv with two columns - predicted values and real labels.<br />
+Column names <strong>must</strong> be <code>pred</code> and <code>real</code>, otherwise the application will throw an error.</p>
+<p><em>Note:</em> there shouldn’t be an index column (if using <em>pandas</em>, use <code>to_csv(index = False)</code> to export the predictions file in the correct format).</p>
 <p><strong>Minimal Example</strong></p>
 <pre class="r"><code>real = c(rep(0,5), rep(1,5)) # real labels, given as 0/1
 pred = seq(0,1,length.out = 10) # predicted values

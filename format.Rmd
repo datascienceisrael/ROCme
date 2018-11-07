@@ -4,9 +4,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Data Format
 
-The uploaded file should be a valid .csv with two columns - predicted values and real labels.
+The uploaded file should be a valid .csv with two columns - predicted values and real labels.  
+Column names **must** be `pred` and `real`, otherwise the application will throw an error.  
 
-The names **must** be `pred` and `real`, otherwise the application will throw an error.
+_Note:_ there shouldn't be an index column (if using *pandas*, use `to_csv(index = False)` to export the predictions file in the correct format).
+
 
 **Minimal Example**
 ```{r}
